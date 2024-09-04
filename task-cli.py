@@ -109,6 +109,13 @@ class Task:
         }
 
 
+def get_task_by_id(id: int):
+    if not 0 <= id <= len(task_list):
+        raise IndexError(f"There is no task with id: {id}")
+
+    return task_list[id]
+
+
 def save_to_json(func):
     """Decorator to save current state of task_list to file after function call"""
 
@@ -156,7 +163,7 @@ def add_task(description: str):
 @save_to_json
 def update_task(id: int, new_description: str):
     """Update task description by id"""
-    task = task_list[id]
+    task = get_task_by_id(id)
     task.description = new_description
     task.updated_at = datetime.now()
 
@@ -164,7 +171,7 @@ def update_task(id: int, new_description: str):
 @save_to_json
 def change_task_status(id: int, new_status: str):
     """Change task status by id"""
-    task = task_list[id]
+    task = get_task_by_id(id)
     task.status = new_status
     task.updated_at = datetime.now()
 
@@ -172,7 +179,7 @@ def change_task_status(id: int, new_status: str):
 @save_to_json
 def delete_task(id: int):
     """Mark task as deleted"""
-    task = task_list[id]
+    task = get_task_by_id(id)
     task.status = DELETED
     task.updated_at = datetime.now()
 
@@ -196,21 +203,17 @@ if __name__ == "__main__":
         if args.command == ADD:
             add_task(args.first_option)
         elif args.command == UPDATE:
-            task_id = int(args.first_option)
-            update_task(task_id, args.second_option)
+            update_task(int(args.first_option), args.second_option)
         elif args.command == MARK_IN_PROGRESS:
-            task_id = int(args.first_option)
-            change_task_status(id=task_id, new_status=IN_PROGRESS)
+            change_task_status(id=int(args.first_option), new_status=IN_PROGRESS)
         elif args.command == MARK_DONE:
-            task_id = int(args.first_option)
-            change_task_status(id=task_id, new_status=DONE)
+            change_task_status(id=int(args.first_option), new_status=DONE)
         elif args.command == DELETE:
-            task_id = int(args.first_option)
-            delete_task(id=task_id)
+            delete_task(id=int(args.first_option))
         elif args.command == LIST:
             list_tasks(filter_status=args.first_option if args.first_option else None)
-    except IndexError:
-        print(f"There is no task with id: {task_id}")
-    except:
-        print("Wrong Usage!\n")
+    except IndexError as e:
+        print(e)
+    except TypeError as e:
+        print(f"Wrong Usage!\n\n{e}\n\n")
         arg_parser.print_help()
