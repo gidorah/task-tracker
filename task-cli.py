@@ -196,15 +196,21 @@ if __name__ == "__main__":
         if args.command == ADD:
             add_task(args.first_option)
         elif args.command == UPDATE:
-            update_task(int(args.first_option), args.second_option)
+            task_id = int(args.first_option)
+            update_task(task_id, args.second_option)
         elif args.command == MARK_IN_PROGRESS:
-            change_task_status(id=int(args.first_option), new_status=IN_PROGRESS)
+            task_id = int(args.first_option)
+            change_task_status(id=task_id, new_status=IN_PROGRESS)
         elif args.command == MARK_DONE:
-            change_task_status(id=int(args.first_option), new_status=DONE)
+            task_id = int(args.first_option)
+            change_task_status(id=task_id, new_status=DONE)
         elif args.command == DELETE:
-            delete_task(id=int(args.first_option))
+            task_id = int(args.first_option)
+            delete_task(id=task_id)
         elif args.command == LIST:
             list_tasks(filter_status=args.first_option if args.first_option else None)
+    except IndexError:
+        print(f"There is no task with id: {task_id}")
     except:
         print("Wrong Usage!\n")
         arg_parser.print_help()
