@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
-import os
-
+import argparse
+import textwrap
 
 # Task states
 TODO = "todo"
@@ -21,6 +21,43 @@ LIST = "list"
 JSON_FILE = "tasks.json"
 
 task_list = []
+
+arg_parser = argparse.ArgumentParser(
+    prog="task-cli",
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description=(
+        """
+example usages:
+
+    # Adding a new task
+    task-cli add "Buy groceries"
+
+    # Updating and deleting tasks
+    task-cli update 1 "Buy groceries and cook dinner"
+    task-cli delete 1
+
+    # Marking a task as in progress or done
+    task-cli mark-in-progress 1
+    task-cli mark-done 1
+
+    # Listing all tasks
+    task-cli list
+
+    # Listing tasks by status
+    task-cli list done
+    task-cli list todo
+    task-cli list in-progress
+    """
+    ),
+)
+
+arg_parser.add_argument(
+    "command",
+    help="First argument. It is the command that would have options. [add, update, delete, mark-in-progress, mark-done, list]",
+)
+arg_parser.add_argument("first_option", nargs="?")
+arg_parser.add_argument("second_option", nargs="?")
+args = arg_parser.parse_args()
 
 
 def _get_new_id() -> int:
@@ -85,8 +122,6 @@ def save_to_json(func):
             json_file.write(json_str)
             json_file.close()
 
-        print(json_str)
-
         # Return the original function's result
         return result
 
@@ -115,6 +150,7 @@ def add_task(description: str):
     """Create a new task"""
     new_task = Task(description=description)
     task_list.append(new_task)
+    print(f"Task added successfully (ID:{new_task.id})")
 
 
 @save_to_json
@@ -126,16 +162,49 @@ def update_task(id: int, new_description: str):
 
 
 @save_to_json
+def change_task_status(id: int, new_status: str):
+    """Change task status by id"""
+    task = task_list[id]
+    task.status = new_status
+    task.updated_at = datetime.now()
+
+
+@save_to_json
 def delete_task(id: int):
     """Mark task as deleted"""
-    pass
+    task = task_list[id]
+    task.status = DELETED
+    task.updated_at = datetime.now()
 
 
 def list_tasks(filter_status: str = None):
     """List undeleted tasks, filter if status given"""
-    pass
+    for task in task_list:
+        if (
+            filter_status is not None
+            and task.status == filter_status
+            or filter_status is None
+            and task.status != DELETED
+        ):
+            print(f"{task.id}: {task.description}")
 
 
-load_json()
-add_task("build a project")
-add_task("Don't forget to rest")
+if __name__ == "__main__":
+    load_json()
+
+    try:
+        if args.command == ADD:
+            add_task(args.first_option)
+        elif args.command == UPDATE:
+            update_task(int(args.first_option), args.second_option)
+        elif args.command == MARK_IN_PROGRESS:
+            change_task_status(id=int(args.first_option), new_status=IN_PROGRESS)
+        elif args.command == MARK_DONE:
+            change_task_status(id=int(args.first_option), new_status=DONE)
+        elif args.command == DELETE:
+            delete_task(id=int(args.first_option))
+        elif args.command == LIST:
+            list_tasks(filter_status=args.first_option if args.first_option else None)
+    except:
+        print("Wrong Usage!\n")
+        arg_parser.print_help()
