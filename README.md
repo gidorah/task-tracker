@@ -1,6 +1,8 @@
 # task-tracker
 
-A simple task tracker cli application. Uses JSON file (tasks.json) to save/load tasks.
+A simple task tracker cli application. Uses JSON file (tasks.json) to save/load tasks. 
+
+It is one of roadmap.sh backend projects: https://roadmap.sh/projects/task-tracker
 
 Usage:
 
